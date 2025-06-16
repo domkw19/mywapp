@@ -1,47 +1,30 @@
-package com.example.autoreply
-
-import android.content.Intent
-import android.os.Bundle
-import android.provider.Settings
-import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.room.Room
+import android.os.Bundle
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var db: AppDatabase
-    private lateinit var dao: AutoReplyDao
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "auto_reply_db"
-        ).allowMainThreadQueries().build()
+        // 1. العثور على الـ RecyclerView في ملف الـ layout باستخدام الـ ID الخاص به
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerViewReplies)
 
-        dao = db.autoReplyDao()
+        // 2. إنشاء قائمة بيانات وهمية مؤقتة للاختبار
+        val replyList = listOf(
+            Reply("مستخدم واتساب 1", "10:45 م"),
+            Reply("أحمد", "10:42 م"),
+            Reply("فريق العمل", "9:15 م"),
+            Reply("محمد", "8:30 م"),
+            Reply("+1-202-555-0125", "7:00 م"),
+            Reply("الوالدة", "6:55 م"),
+            Reply("شركة الإنترنت", "4:10 م")
+        )
 
-        val inputMessage = findViewById<EditText>(R.id.inputMessage)
-        val inputReply = findViewById<EditText>(R.id.inputReply)
-        val saveBtn = findViewById<Button>(R.id.saveButton)
-        val openSettingsBtn = findViewById<Button>(R.id.settingsButton)
+        // 3. إنشاء نسخة من الـ Adapter الذي صنعناه وتمرير قائمة البيانات له
+        val adapter = ReplyAdapter(replyList)
 
-        saveBtn.setOnClickListener {
-            val msg = inputMessage.text.toString().trim()
-            val reply = inputReply.text.toString().trim()
-
-            if (msg.isNotEmpty() && reply.isNotEmpty()) {
-                dao.insert(AutoReply(msg, reply))
-                Toast.makeText(this, "تم حفظ الرد التلقائي ✅", Toast.LENGTH_SHORT).show()
-                inputMessage.text.clear()
-                inputReply.text.clear()
-            }
-        }
-
-        openSettingsBtn.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-        }
+        // 4. هذه هي الخطوة الأهم: ربط الـ Adapter مع الـ RecyclerView
+        recyclerView.adapter = adapter
     }
 }
